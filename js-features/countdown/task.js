@@ -20,7 +20,7 @@ const interval = setInterval (() => {
 
     } else {
         clearInterval(interval)
-        alert("Вы победили в конкурсе!")
+        location.assign("https://libobibo.com/file.bin")
     }
     
 }, 1000)

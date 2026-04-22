@@ -49,7 +49,6 @@ function createTaskElement(taskText) {
     })
 }
 
-// Обработчик добавления новой задачи
 formInput.addEventListener("submit", (event) => {
     event.preventDefault()
 

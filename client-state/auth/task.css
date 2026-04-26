@@ -37,11 +37,20 @@
   box-shadow: none;
 }
 
+.btn_logout {
+  background-color: #dc3545;
+  margin-top: 20px;
+}
+
+.btn_logout:hover {
+  background-color: #c82333;
+}
+
 .welcome {
   display: none;
+  text-align: center;
 }
 
 .welcome_active {
   display: block;
-  text-align: center;
 }

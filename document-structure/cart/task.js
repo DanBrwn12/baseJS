@@ -3,6 +3,61 @@ const cartProductsContainer = document.getElementById('cart__products')
 const cartEmptyMessage = document.getElementById('cartEmptyMessage')
 const products = document.querySelectorAll('.product')
 
+const STORAGE_KEY = 'shoppingCart'
+
+function saveCartToLocalStorage() {
+  const cartItems = document.querySelectorAll('.cart__product')
+  const cartData = []
+  
+  cartItems.forEach(item => {
+    cartData.push({
+      id: item.dataset.id,
+      image: item.querySelector('.cart__product-image').src,
+      count: parseInt(item.querySelector('.cart__product-count').textContent)
+    })
+  })
+  
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(cartData))
+}
+
+function loadCartFromLocalStorage() {
+  const savedCart = localStorage.getItem(STORAGE_KEY)
+  
+  if (!savedCart) {
+    return false
+  }
+  
+  const cartData = JSON.parse(savedCart)
+  
+  cartData.forEach(item => {
+    const cartItem = document.createElement('div')
+    cartItem.className = 'cart__product'
+    cartItem.dataset.id = item.id
+    
+    const img = document.createElement('img')
+    img.className = 'cart__product-image'
+    img.src = item.image
+    img.alt = 'Товар'
+    
+    const count = document.createElement('div')
+    count.className = 'cart__product-count'
+    count.textContent = item.count
+    
+    const deleteBtn = createDeleteButton()
+    deleteBtn.addEventListener('click', (event) => {
+      event.stopPropagation()
+      deleteCartItem(cartItem)
+    })
+    
+    cartItem.appendChild(img)
+    cartItem.appendChild(count)
+    cartItem.appendChild(deleteBtn)
+    cartProductsContainer.appendChild(cartItem)
+  })
+  
+  return true
+}
+
 function updateCartVisibility() {
   const cartItems = document.querySelectorAll('.cart__product')
   const hasItems = cartItems.length > 0
@@ -14,6 +69,8 @@ function updateCartVisibility() {
     cartContainer.classList.remove('cart_active')
     cartEmptyMessage.classList.remove('cart__empty-message_hide')
   }
+  
+  saveCartToLocalStorage()
 }
 
 function updateQuantity(productCard, delta) {
@@ -88,19 +145,6 @@ function animateProductToCart(productImage, targetElement, callback) {
   }, 700)
 }
 
-function addToCartWithAnimation(productCard) {
-  const productId = productCard.dataset.id
-  const productImage = productCard.querySelector('.product__image')
-  const quantityValue = parseInt(productCard.querySelector('.product__quantity-value').textContent)
-  
-  const cartTarget = document.querySelector('.cart__products')
-  
-  animateProductToCart(productImage, cartTarget, () => {
-    addToCartLogic(productCard, productId, productImage.src, quantityValue)
-    animateCartPulse()
-  })
-}
-
 function addToCartLogic(productCard, productId, productImageSrc, quantityValue) {
   const existingCartItem = document.querySelector(`.cart__product[data-id="${productId}"]`)
   
@@ -139,6 +183,25 @@ function addToCartLogic(productCard, productId, productImageSrc, quantityValue) 
     cartProductsContainer.appendChild(cartItem)
   }
   
+  updateCartVisibility()
+}
+
+function addToCartWithAnimation(productCard) {
+  const productId = productCard.dataset.id
+  const productImage = productCard.querySelector('.product__image')
+  const quantityValue = parseInt(productCard.querySelector('.product__quantity-value').textContent)
+  
+  const cartTarget = document.querySelector('.cart__products')
+  
+  animateProductToCart(productImage, cartTarget, () => {
+    addToCartLogic(productCard, productId, productImage.src, quantityValue)
+    animateCartPulse()
+  })
+}
+
+const hasSavedCart = loadCartFromLocalStorage()
+
+if (hasSavedCart) {
   updateCartVisibility()
 }
 

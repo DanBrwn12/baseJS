@@ -1,5 +1,20 @@
-const cartProductsContainer = document.querySelector('.cart__products')
+const cartContainer = document.getElementById('cart')
+const cartProductsContainer = document.getElementById('cart__products')
+const cartEmptyMessage = document.getElementById('cartEmptyMessage')
 const products = document.querySelectorAll('.product')
+
+function updateCartVisibility() {
+  const cartItems = document.querySelectorAll('.cart__product')
+  const hasItems = cartItems.length > 0
+  
+  if (hasItems) {
+    cartContainer.classList.add('cart_active')
+    cartEmptyMessage.classList.add('cart__empty-message_hide')
+  } else {
+    cartContainer.classList.remove('cart_active')
+    cartEmptyMessage.classList.remove('cart__empty-message_hide')
+  }
+}
 
 function updateQuantity(productCard, delta) {
   const quantityValue = productCard.querySelector('.product__quantity-value')
@@ -9,6 +24,19 @@ function updateQuantity(productCard, delta) {
   if (newValue >= 1) {
     quantityValue.textContent = newValue
   }
+}
+
+function deleteCartItem(cartItem) {
+  cartItem.remove()
+  updateCartVisibility()
+}
+
+function createDeleteButton() {
+  const deleteBtn = document.createElement('button')
+  deleteBtn.className = 'cart__product-delete'
+  deleteBtn.textContent = '×'
+  deleteBtn.title = 'Удалить товар'
+  return deleteBtn
 }
 
 function addToCart(productCard) {
@@ -30,15 +58,25 @@ function addToCart(productCard) {
     const img = document.createElement('img')
     img.className = 'cart__product-image'
     img.src = productImage
+    img.alt = 'Товар'
     
     const count = document.createElement('div')
     count.className = 'cart__product-count'
     count.textContent = quantityValue
     
+    const deleteBtn = createDeleteButton()
+    deleteBtn.addEventListener('click', (event) => {
+      event.stopPropagation()
+      deleteCartItem(cartItem)
+    })
+    
     cartItem.appendChild(img)
     cartItem.appendChild(count)
+    cartItem.appendChild(deleteBtn)
     cartProductsContainer.appendChild(cartItem)
   }
+  
+  updateCartVisibility()
 }
 
 products.forEach(product => {
@@ -58,3 +96,5 @@ products.forEach(product => {
     addButton.addEventListener('click', () => addToCart(product))
   }
 })
+
+updateCartVisibility()

@@ -39,17 +39,80 @@ function createDeleteButton() {
   return deleteBtn
 }
 
-function addToCart(productCard) {
+function animateCartPulse() {
+  cartContainer.classList.add('cart_pulse')
+  setTimeout(() => {
+    cartContainer.classList.remove('cart_pulse')
+  }, 600)
+}
+
+function animateProductToCart(productImage, targetElement, callback) {
+  const startRect = productImage.getBoundingClientRect()
+  const targetRect = targetElement.getBoundingClientRect()
+  
+  const flyingImg = document.createElement('img')
+  flyingImg.src = productImage.src
+  flyingImg.className = 'flying-image'
+  flyingImg.style.width = `${startRect.width}px`
+  flyingImg.style.height = `${startRect.height}px`
+  flyingImg.style.left = `${startRect.left}px`
+  flyingImg.style.top = `${startRect.top}px`
+  
+  document.body.appendChild(flyingImg)
+  
+  const endLeft = targetRect.left + (targetRect.width / 2) - (startRect.width / 2)
+  const endTop = targetRect.top + (targetRect.height / 2) - (startRect.height / 2)
+  
+  requestAnimationFrame(() => {
+    flyingImg.style.left = `${endLeft}px`
+    flyingImg.style.top = `${endTop}px`
+    flyingImg.style.width = '40px'
+    flyingImg.style.height = '40px'
+    flyingImg.style.opacity = '0.8'
+  })
+  
+  flyingImg.addEventListener('transitionend', () => {
+    flyingImg.remove()
+    if (callback) {
+      callback()
+    }
+  }, { once: true })
+  
+  setTimeout(() => {
+    if (flyingImg.parentNode) {
+      flyingImg.remove()
+      if (callback) {
+        callback()
+      }
+    }
+  }, 700)
+}
+
+function addToCartWithAnimation(productCard) {
   const productId = productCard.dataset.id
-  const productImage = productCard.querySelector('.product__image').src
+  const productImage = productCard.querySelector('.product__image')
   const quantityValue = parseInt(productCard.querySelector('.product__quantity-value').textContent)
   
+  const cartTarget = document.querySelector('.cart__products')
+  
+  animateProductToCart(productImage, cartTarget, () => {
+    addToCartLogic(productCard, productId, productImage.src, quantityValue)
+    animateCartPulse()
+  })
+}
+
+function addToCartLogic(productCard, productId, productImageSrc, quantityValue) {
   const existingCartItem = document.querySelector(`.cart__product[data-id="${productId}"]`)
   
   if (existingCartItem) {
     const countElement = existingCartItem.querySelector('.cart__product-count')
     const currentCount = parseInt(countElement.textContent)
     countElement.textContent = currentCount + quantityValue
+    
+    existingCartItem.style.transform = 'scale(1.1)'
+    setTimeout(() => {
+      existingCartItem.style.transform = 'scale(1)'
+    }, 200)
   } else {
     const cartItem = document.createElement('div')
     cartItem.className = 'cart__product'
@@ -57,7 +120,7 @@ function addToCart(productCard) {
     
     const img = document.createElement('img')
     img.className = 'cart__product-image'
-    img.src = productImage
+    img.src = productImageSrc
     img.alt = 'Товар'
     
     const count = document.createElement('div')
@@ -93,7 +156,7 @@ products.forEach(product => {
   }
   
   if (addButton) {
-    addButton.addEventListener('click', () => addToCart(product))
+    addButton.addEventListener('click', () => addToCartWithAnimation(product))
   }
 })
 
